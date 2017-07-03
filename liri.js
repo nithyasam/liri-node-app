@@ -1,13 +1,16 @@
 var keys = require("./keys.js");
 var fs = require("fs");
+var readline = require("readline");
 var request = require("request");
 var command = process.argv[2];
 var name = "";
+var search = getArgs();
 //==================================
 //Appending data to file
 //==================================
 function writeData(value){
-	fs.appendFile("log.txt",value, function(error){
+	var fileName = "log.txt";
+	fs.appendFile(fileName, value, function(error){
 		if(error){
 			console.log(error);
 		}
@@ -30,7 +33,7 @@ function logTweets(screen_name, tweets){
 //Logs "spotify-this-song" to 
 //console and file
 //==================================
-function logSpotify(response){
+function logSpotify(response, song){
 	var items = response.tracks.items;
 	var artists = "";
 	var song_name = items[0].name;
@@ -45,12 +48,34 @@ function logSpotify(response){
 			"Song Name.   : "+song_name+ "\n"+
 			"Preview Link : "+ preview_link + "\n"+
 			"Album Name   : "+ album_name+ "\n");
-		writeData(command+"\n==============\n"+
+		writeData("\n"+song+"\n==============\n"+
 			"Artists      : "+artists+ "\n"+
 			"Song Name.   : "+song_name+ "\n"+
 			"Preview Link : "+ preview_link + "\n"+
-			"Album Name   : "+ album_name+ "\n")
+			"Album Name   : "+ album_name+ "\n");
 	}
+}
+//==================================
+//Logs movie data to console and file
+//==================================
+function logOMDB(data, movieName){
+	console.log("\nTitle                  :"+JSON.parse(data).Title+
+		"\nYear                   :"+JSON.parse(data).Year+
+		"\nIMDB Rating            :"+JSON.parse(data).imdbRating+
+		"\nRotten Tomatoes Rating :"+JSON.parse(data).Ratings[1].Value+
+		"\nCountry                :"+JSON.parse(data).Country+
+		"\nLanguage               :"+JSON.parse(data).Language+
+		"\nPlot                   :"+JSON.parse(data).Plot+
+		"\nActors                 :"+JSON.parse(data).Actors+"\n");
+	writeData("\n"+movieName+"\n==============\n"+
+		"\nTitle                  :"+JSON.parse(data).Title+
+		"\nYear                   :"+JSON.parse(data).Year+
+		"\nIMDB Rating            :"+JSON.parse(data).imdbRating+
+		"\nRotten Tomatoes Rating :"+JSON.parse(data).Ratings[1].Value+
+		"\nCountry                :"+JSON.parse(data).Country+
+		"\nLanguage               :"+JSON.parse(data).Language+
+		"\nPlot                   :"+JSON.parse(data).Plot+
+		"\nActors                 :"+JSON.parse(data).Actors+"\n");
 }
 //==================================
 //Calling Twitter API
@@ -76,7 +101,7 @@ function callTwitter(){
 //==================================
 function callSpotify(song){
 	var song = song;
-	if(song == undefined){
+	if(song == ""){
 		song = '"The Sign" by Ace of Base';
 	}
 	var Spotify = require('node-spotify-api');
@@ -89,7 +114,7 @@ function callSpotify(song){
 	spotify
 	.search({ type: 'track', query: song})
 	.then(function(response) {
-		logSpotify(response);
+		logSpotify(response, song);
 	})
 	.catch(function(err) {
 		console.log(error);
@@ -99,18 +124,40 @@ function callSpotify(song){
 //Calling OMDB API
 //==================================
 function callOMDB(movieName){
+	var movie = movieName;
+	if(movieName == ""){
+		movieName = "Mr. Nobody";
+	}
 	var queryUrl = "http://www.omdbapi.com/?t=" + movieName + 
-					"&y=&plot=short&apikey=40e9cece";
+	"&y=&plot=short&apikey=40e9cece";
 	request(queryUrl,function(error,response, body){
 		if (!error && response.statusCode === 200) {
-			console.log(JSON.parse(body));
+			logOMDB(body, movieName);
 		}
 	});
 }
 //==================================
+//Calling random.txt for 
+//do-what-it-says
+//==================================
+function callRandom(){
+	var data=fs.readFileSync('random.txt');
+	var fileArr = data.toString().split('\n');
+	//Find the number of lines in the file.
+	var numberOfLines = fileArr.length;
+	//Generate a random number within the number of lines in the file.
+	var randomNum = Math.floor((Math.random() * (numberOfLines-1)));
+	var lineArr = fileArr[randomNum].split(",");
+	command = lineArr[0];
+	search = lineArr[1];
+	commands();
+}
+
+//==================================
 //Getting argument with multiple words
 //==================================
 function getArgs(){
+	name = "";
 	for (var i = 3; i < process.argv.length; i++) {
 		if (i > 3 && i < process.argv.length) {
 			name = name + "+" + process.argv[i];
@@ -119,28 +166,35 @@ function getArgs(){
 			name += process.argv[i];
 		}
 	}
+	console.log(name);
 	return name;
 }
 //==================================
-//Handling input commands
+//Handling liri commands
 //==================================
-switch(command){
-	case "my-tweets":
-	callTwitter();
-	break;
+function commands(){
+	switch(command){
+		case "my-tweets":
+		callTwitter();
+		break;
 
-	case "spotify-this-song":
-	var song = getArgs();
-	callSpotify(song);
-	break;
+		case "spotify-this-song":
+		callSpotify(search);
+		break;
 
-	case "movie-this":
-	var movie = getArgs();
-	callOMDB();
-	break;
+		case "movie-this":
+		callOMDB(search);
+		break;
 
-	case "do-what-it-says":
-	break;
+		case "do-what-it-says":
+		callRandom();
+		break;
 
-	default:
+		default:
+		console.log("Oops! Please choose from these commands:\n"+
+			"========================================\n"+
+			"my-tweets\nspotify-this-song <song>\n"+
+			"movie-this <movie-name>\ndo-what-it-says");
+	}
 }
+commands();
