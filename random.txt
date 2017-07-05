@@ -1,2 +1,7 @@
 spotify-this-song,"I Want it That Way"
 movie-this,"Frozen"
+spotify-this-song,"Know Who You Are"
+movie-this,"Cinderella"
+movie-this,"Trolls"
+spotify-this-song,"somebody i used to know"
+movie-this,"Mr. Nobody"
