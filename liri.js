@@ -22,7 +22,7 @@ function writeData(value){
 function logTweets(screen_name, tweets){
 	console.log("\n@"+screen_name + " tweets :\n"+ 
 		"====================\n");
-	writeData(command+"\n@"+screen_name + " tweets :\n"+ 
+	writeData("\n"+command+"\n@"+screen_name + " tweets :\n"+ 
 		"====================\n");
 	for(var i=0; i<tweets.length; i++){
 		console.log(tweets[i].text);
@@ -59,10 +59,18 @@ function logSpotify(response, song){
 //Logs movie data to console and file
 //==================================
 function logOMDB(data, movieName){
+	//Getting Rotten Tomatoes Rating
+	var rt_rating="";
+	var ratings = JSON.parse(data).Ratings;
+	for(var i=0; i< ratings.length; i++){
+		if(ratings[i].Source == "Rotten Tomatoes"){
+			rt_rating = ratings[i].Value;
+		}
+	}
 	console.log("\nTitle                  :"+JSON.parse(data).Title+
 		"\nYear                   :"+JSON.parse(data).Year+
 		"\nIMDB Rating            :"+JSON.parse(data).imdbRating+
-		"\nRotten Tomatoes Rating :"+JSON.parse(data).Ratings[1].Value+
+		"\nRotten Tomatoes Rating :"+rt_rating+
 		"\nCountry                :"+JSON.parse(data).Country+
 		"\nLanguage               :"+JSON.parse(data).Language+
 		"\nPlot                   :"+JSON.parse(data).Plot+
@@ -71,7 +79,7 @@ function logOMDB(data, movieName){
 		"\nTitle                  :"+JSON.parse(data).Title+
 		"\nYear                   :"+JSON.parse(data).Year+
 		"\nIMDB Rating            :"+JSON.parse(data).imdbRating+
-		"\nRotten Tomatoes Rating :"+JSON.parse(data).Ratings[1].Value+
+		"\nRotten Tomatoes Rating :"+rt_rating+
 		"\nCountry                :"+JSON.parse(data).Country+
 		"\nLanguage               :"+JSON.parse(data).Language+
 		"\nPlot                   :"+JSON.parse(data).Plot+
