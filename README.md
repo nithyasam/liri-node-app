@@ -5,8 +5,11 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
 liri.js can take in one of the following commands:
 
 my-tweets
+
 spotify-this-song
+
 movie-this
+
 do-what-it-says
 
 
